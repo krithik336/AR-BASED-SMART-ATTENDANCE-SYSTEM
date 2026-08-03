@@ -1,0 +1,49 @@
+# =====================================================================
+# Root .gitignore - AR-Based Smart Attendance System (monorepo)
+# =====================================================================
+
+# ---------- Java / Spring Boot (Maven) ----------
+**/target/
+*.class
+
+# ---------- Node.js / React (Vite) ----------
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# ---------- Python (FastAPI vision service) ----------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv*/
+venv*/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- IDE / Editor ----------
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.factorypath
+.vscode/*
+!.vscode/settings.json
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+
+# ---------- Logs ----------
+*.log
+
+# ---------- Environment / Secrets ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Runtime data ----------
+attendance-backend/uploads/

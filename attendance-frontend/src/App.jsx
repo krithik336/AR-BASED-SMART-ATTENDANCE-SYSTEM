@@ -5,6 +5,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
+import ClassManagement from './pages/ClassManagement'
+import StudentRegistration from './pages/StudentRegistration'
+import AttendanceScan from './pages/AttendanceScan'
+import AttendanceReports from './pages/AttendanceReports'
 
 function HomeRedirect() {
   const { user } = useAuth()
@@ -29,12 +33,52 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/classes"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <ClassManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students/register"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <StudentRegistration />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/teacher"
             element={
               <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/scan"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <AttendanceScan />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/sessions"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <AttendanceReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/sessions/:id"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+                <AttendanceReports />
               </ProtectedRoute>
             }
           />

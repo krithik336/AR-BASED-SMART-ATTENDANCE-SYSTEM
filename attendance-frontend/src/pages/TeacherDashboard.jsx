@@ -1,7 +1,9 @@
 import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -15,12 +17,27 @@ export default function TeacherDashboard() {
         </div>
       </header>
 
-      <main className="p-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
-          <p className="font-medium text-slate-700 mb-1">Phase 1 checkpoint reached ✅</p>
-          <p className="text-sm">
-            Your class list and "Start Scan Session" button (Phase 3) will render here next.
-          </p>
+      <main className="p-6 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <button
+            onClick={() => navigate('/teacher/scan')}
+            className="bg-white rounded-xl border border-slate-200 p-8 text-left hover:border-brand hover:shadow-sm transition-colors"
+          >
+            <p className="font-semibold text-slate-800 mb-1">Start Attendance Scan</p>
+            <p className="text-sm text-slate-500">
+              Open a camera session and recognise students in real time with ArcFace.
+            </p>
+          </button>
+
+          <button
+            onClick={() => navigate('/teacher/sessions')}
+            className="bg-white rounded-xl border border-slate-200 p-8 text-left hover:border-brand hover:shadow-sm transition-colors"
+          >
+            <p className="font-semibold text-slate-800 mb-1">Sessions &amp; Reports</p>
+            <p className="text-sm text-slate-500">
+              Review past attendance sessions and per-student records.
+            </p>
+          </button>
         </div>
       </main>
     </div>
