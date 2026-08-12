@@ -1,7 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html, body, #root {
   height: 100%;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-white text-text-primary text-sm font-medium rounded-lg border border-border hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-danger text-white text-sm font-medium rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .input {
+    @apply w-full px-3 py-2 text-sm text-text-primary bg-white border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-text-secondary;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-border shadow-card;
+  }
+  .badge-blue {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-light text-primary;
+  }
+  .badge-green {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-success;
+  }
+  .badge-danger {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-danger;
+  }
+  .badge-neutral {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface text-text-secondary;
+  }
 }

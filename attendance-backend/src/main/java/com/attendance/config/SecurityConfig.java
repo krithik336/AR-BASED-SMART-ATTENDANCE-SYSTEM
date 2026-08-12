@@ -77,11 +77,16 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Protected URLs
+                        // Admin-only
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/analytics").hasRole("ADMIN")
+
+                        // Admin or Teacher
                         .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/classes/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/sessions/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/attendance/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/api/analytics/my").hasAnyRole("ADMIN", "TEACHER")
 
                         .anyRequest().authenticated()
                 )
@@ -100,19 +105,12 @@ public class SecurityConfig {
                 Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList()
         );
         configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;

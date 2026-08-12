@@ -79,7 +79,7 @@ export default function TeacherManagement() {
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">Full Name</label>
-              <input required value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Dr. Arun Kumar" />
+              <input required value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="FACULTY" />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">Email</label>

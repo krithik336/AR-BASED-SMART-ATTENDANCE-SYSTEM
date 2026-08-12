@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { listSessions, getSessionReport } from '../api/sessions'
 
 const statusBadge = (status) =>
-  status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+  status === 'ACTIVE' ? 'badge-green' : 'badge-neutral'
 
 export default function AttendanceReports() {
   const { id } = useParams()
@@ -17,25 +17,17 @@ export default function AttendanceReports() {
   const loadSessions = useCallback(async () => {
     setLoading(true)
     setError('')
-    try {
-      setSessions(await listSessions())
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load sessions')
-    } finally {
-      setLoading(false)
-    }
+    try { setSessions(await listSessions()) }
+    catch (err) { setError(err.response?.data?.message || 'Failed to load sessions') }
+    finally { setLoading(false) }
   }, [])
 
   const loadReport = useCallback(async () => {
     setLoading(true)
     setError('')
-    try {
-      setReport(await getSessionReport(id))
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load report')
-    } finally {
-      setLoading(false)
-    }
+    try { setReport(await getSessionReport(id)) }
+    catch (err) { setError(err.response?.data?.message || 'Failed to load report') }
+    finally { setLoading(false) }
   }, [id])
 
   useEffect(() => {
@@ -43,81 +35,75 @@ export default function AttendanceReports() {
     else loadSessions()
   }, [id, loadReport, loadSessions])
 
+  // ── Session report view ────────────────────────────────────────────────────
   if (id) {
-    if (loading) return <Shell>Loading report…</Shell>
-    if (error) return <Shell>{error}</Shell>
-    if (!report) return <Shell>No report.</Shell>
+    if (loading) return <PageShell><p className="text-sm text-text-secondary">Loading report…</p></PageShell>
+    if (error)   return <PageShell><div className="bg-red-50 text-danger text-sm rounded-lg px-4 py-3 border border-red-200">{error}</div></PageShell>
+    if (!report) return <PageShell><p className="text-sm text-text-secondary">No report.</p></PageShell>
 
     const s = report.session
     return (
-      <Shell
+      <PageShell
         title="Session Report"
-        back={
-          <button onClick={() => navigate('/teacher/sessions')} className="text-sm text-slate-600 hover:text-brand">
+        action={
+          <button onClick={() => navigate('/teacher/sessions')} className="btn-secondary text-xs">
             ← All sessions
           </button>
         }
       >
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="card p-6 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-800">
-                {s.className} {s.subject ? `— ${s.subject}` : ''}
+              <h2 className="text-lg font-semibold text-text-primary">
+                {s.className}{s.subject ? ` — ${s.subject}` : ''}
               </h2>
-              <p className="text-sm text-slate-500">
-                Started {new Date(s.startedAt).toLocaleString()} ·{' '}
-                {s.endedAt ? `Ended ${new Date(s.endedAt).toLocaleString()}` : 'Ongoing'}
+              <p className="text-sm text-text-secondary mt-0.5">
+                Started {new Date(s.startedAt).toLocaleString()}
+                {s.endedAt ? ` · Ended ${new Date(s.endedAt).toLocaleString()}` : ' · Ongoing'}
               </p>
             </div>
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusBadge(s.status)}`}>
-              {s.status}
-            </span>
+            <span className={statusBadge(s.status)}>{s.status}</span>
           </div>
-          <div className="grid grid-cols-4 gap-4 mt-4 text-center">
-            <Stat label="Total" value={s.totalStudents} />
-            <Stat label="Present" value={s.present} color="text-green-600" />
-            <Stat label="Absent" value={s.absent} color="text-red-600" />
+          <div className="grid grid-cols-4 gap-4 text-center">
+            <Stat label="Total"      value={s.totalStudents} />
+            <Stat label="Present"    value={s.present}    color="text-success" />
+            <Stat label="Absent"     value={s.absent}     color="text-danger" />
             <Stat label="Unverified" value={s.unverified} />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200">
-            <h3 className="font-medium text-slate-800">Attendance Records</h3>
+        <div className="card overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
+            <h3 className="font-semibold text-text-primary">Attendance Records</h3>
           </div>
           {report.records.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400">
+            <p className="p-6 text-sm text-text-secondary">
               No records yet. Records are generated when a session ends.
             </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-slate-500 border-b border-slate-200">
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Roll</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
-                  <th className="px-6 py-3 font-medium">Similarity</th>
+                <tr className="bg-surface border-b border-border text-left">
+                  <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Roll</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Similarity</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border">
                 {report.records.map((r) => (
-                  <tr key={r.studentId} className="border-b border-slate-100 last:border-0">
-                    <td className="px-6 py-3">{r.studentName}</td>
-                    <td className="px-6 py-3 font-mono text-xs">{r.rollNumber}</td>
+                  <tr key={r.studentId} className="hover:bg-surface transition-colors">
+                    <td className="px-6 py-3 font-medium text-text-primary">{r.studentName}</td>
+                    <td className="px-6 py-3 font-mono text-xs text-text-secondary">{r.rollNumber}</td>
                     <td className="px-6 py-3">
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          r.status === 'PRESENT'
-                            ? 'bg-green-100 text-green-700'
-                            : r.status === 'ABSENT'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
+                      <span className={
+                        r.status === 'PRESENT' ? 'badge-green' :
+                        r.status === 'ABSENT'  ? 'badge-danger' : 'badge-neutral'
+                      }>
                         {r.status}
                       </span>
                     </td>
-                    <td className="px-6 py-3 font-mono text-xs text-slate-600">
+                    <td className="px-6 py-3 font-mono text-xs text-text-secondary">
                       {r.similarity > 0 ? `${(r.similarity * 100).toFixed(0)}%` : '—'}
                     </td>
                   </tr>
@@ -126,56 +112,49 @@ export default function AttendanceReports() {
             </table>
           )}
         </div>
-      </Shell>
+      </PageShell>
     )
   }
 
+  // ── Sessions list view ─────────────────────────────────────────────────────
   return (
-    <Shell
-      title="Sessions & Reports"
-      back={
-        <button onClick={() => navigate('/teacher')} className="text-sm text-slate-600 hover:text-brand">
-          ← Back to dashboard
-        </button>
-      }
-    >
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <PageShell title="Sessions & Reports">
+      {error && (
+        <div className="bg-red-50 text-danger text-sm rounded-lg px-4 py-3 border border-red-200 mb-6">{error}</div>
+      )}
+      <div className="card overflow-hidden">
         {loading ? (
-          <p className="p-6 text-sm text-slate-500">Loading sessions…</p>
+          <p className="p-6 text-sm text-text-secondary">Loading sessions…</p>
         ) : sessions.length === 0 ? (
-          <p className="p-6 text-sm text-slate-500">
+          <p className="p-6 text-sm text-text-secondary">
             No sessions yet. Start one from the Attendance Scan page.
           </p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-slate-500 border-b border-slate-200">
-                <th className="px-6 py-3 font-medium">#</th>
-                <th className="px-6 py-3 font-medium">Class</th>
-                <th className="px-6 py-3 font-medium">Subject</th>
-                <th className="px-6 py-3 font-medium">Started</th>
-                <th className="px-6 py-3 font-medium">Present</th>
-                <th className="px-6 py-3 font-medium">Status</th>
+              <tr className="bg-surface border-b border-border text-left">
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">#</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Class</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Subject</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Started</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Present</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {sessions.map((s) => (
-                <tr key={s.id} className="border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50">
+                <tr key={s.id} className="hover:bg-surface transition-colors cursor-pointer">
                   <td className="px-6 py-3">
-                    <Link to={`/teacher/sessions/${s.id}`} className="text-brand font-medium">
+                    <Link to={`/teacher/sessions/${s.id}`} className="text-primary font-medium hover:underline">
                       {s.id}
                     </Link>
                   </td>
-                  <td className="px-6 py-3">{s.className}</td>
-                  <td className="px-6 py-3">{s.subject || '—'}</td>
-                  <td className="px-6 py-3 text-slate-500">{new Date(s.startedAt).toLocaleString()}</td>
+                  <td className="px-6 py-3 font-medium text-text-primary">{s.className}</td>
+                  <td className="px-6 py-3 text-text-secondary">{s.subject || '—'}</td>
+                  <td className="px-6 py-3 text-text-secondary">{new Date(s.startedAt).toLocaleString()}</td>
+                  <td className="px-6 py-3 text-text-secondary">{s.present}/{s.totalStudents}</td>
                   <td className="px-6 py-3">
-                    {s.present}/{s.totalStudents}
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(s.status)}`}>
-                      {s.status}
-                    </span>
+                    <span className={statusBadge(s.status)}>{s.status}</span>
                   </td>
                 </tr>
               ))}
@@ -183,29 +162,29 @@ export default function AttendanceReports() {
           </table>
         )}
       </div>
-    </Shell>
+    </PageShell>
   )
 }
 
-function Shell({ children, title, back }) {
+function PageShell({ children, title = 'Sessions & Reports', action }) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-semibold text-brand-dark">{title || 'Attendance'}</h1>
+          <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
         </div>
-        {back}
-      </header>
-      <main className="p-6 max-w-4xl mx-auto space-y-6">{children}</main>
+        {action}
+      </div>
+      {children}
     </div>
   )
 }
 
 function Stat({ label, value, color }) {
   return (
-    <div className="rounded-lg bg-slate-50 py-3">
-      <p className={`text-2xl font-semibold ${color || 'text-slate-800'}`}>{value}</p>
-      <p className="text-xs text-slate-500">{label}</p>
+    <div className="rounded-lg bg-surface py-3 border border-border">
+      <p className={`text-2xl font-semibold ${color || 'text-text-primary'}`}>{value}</p>
+      <p className="text-xs text-text-secondary mt-0.5">{label}</p>
     </div>
   )
 }

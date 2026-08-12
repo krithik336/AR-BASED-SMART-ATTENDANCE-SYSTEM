@@ -24,9 +24,7 @@ export default function ClassManagement() {
     }
   }, [])
 
-  useEffect(() => {
-    load()
-  }, [load])
+  useEffect(() => { load() }, [load])
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -61,121 +59,106 @@ export default function ClassManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-brand-dark">Class Management</h1>
-          <p className="text-sm text-slate-500">Create classes and enrol students into them</p>
-        </div>
-        <button
-          onClick={() => navigate('/admin')}
-          className="text-sm text-slate-600 hover:text-brand"
-        >
-          ← Back to dashboard
-        </button>
-      </header>
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-text-primary">Class Management</h1>
+        <p className="text-text-secondary text-sm mt-1">Create classes and enrol students into them</p>
+      </div>
 
-      <main className="p-6 max-w-4xl mx-auto space-y-6">
-        {error && (
-          <div className="bg-red-50 text-red-700 text-sm rounded-md px-3 py-2 border border-red-200">
-            {error}
-          </div>
-        )}
+      {error && (
+        <div className="bg-red-50 text-danger text-sm rounded-lg px-4 py-3 border border-red-200 mb-6">{error}</div>
+      )}
 
-        <form
-          onSubmit={handleCreate}
-          className="bg-white rounded-xl border border-slate-200 p-6 space-y-4"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Class Name</label>
-              <input
-                required
-                maxLength={100}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                placeholder="Grade 10 - Section A"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Class Code</label>
-              <input
-                required
-                maxLength={20}
-                pattern="[A-Za-z0-9_-]{2,20}"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                placeholder="10A"
-              />
-            </div>
-          </div>
+      <form onSubmit={handleCreate} className="card p-6 space-y-4 mb-6">
+        <h2 className="text-base font-semibold text-text-primary">Create New Class</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-            <textarea
-              rows={2}
-              maxLength={500}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-              placeholder="Optional"
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Class Name</label>
+            <input
+              required
+              maxLength={100}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+              placeholder="Grade 10 - Section A"
             />
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-brand hover:bg-brand-dark text-white font-medium rounded-md px-4 py-2 text-sm transition-colors disabled:opacity-60"
-          >
-            {saving ? 'Creating…' : 'Create Class'}
-          </button>
-        </form>
-
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200">
-            <h2 className="font-medium text-slate-800">Classes</h2>
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Class Code</label>
+            <input
+              required
+              maxLength={20}
+              pattern="[A-Za-z0-9_-]{2,20}"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="input"
+              placeholder="10A"
+            />
           </div>
-          {loading ? (
-            <p className="p-6 text-sm text-slate-500">Loading classes…</p>
-          ) : classes.length === 0 ? (
-            <p className="p-6 text-sm text-slate-500">No classes yet. Create your first class above.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-500 border-b border-slate-200">
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Code</th>
-                  <th className="px-6 py-3 font-medium">Students</th>
-                  <th className="px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {classes.map((c) => (
-                  <tr key={c.id} className="border-b border-slate-100 last:border-0">
-                    <td className="px-6 py-3">{c.name}</td>
-                    <td className="px-6 py-3 font-mono text-xs">{c.code}</td>
-                    <td className="px-6 py-3">{c.studentCount}</td>
-                    <td className="px-6 py-3 space-x-3">
-                      <button
-                        onClick={() => navigate(`/admin/students/register?classId=${c.id}`)}
-                        className="text-brand text-xs font-medium hover:underline"
-                      >
-                        Add student
-                      </button>
-                      <button
-                        onClick={() => handleDelete(c.id)}
-                        className="text-red-600 text-xs font-medium hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </div>
-      </main>
+        <div>
+          <label className="block text-sm font-medium text-text-primary mb-1.5">Description</label>
+          <textarea
+            rows={2}
+            maxLength={500}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="input"
+            placeholder="Optional"
+          />
+        </div>
+        <button type="submit" disabled={saving} className="btn-primary">
+          {saving ? 'Creating…' : 'Create Class'}
+        </button>
+      </form>
+
+      <div className="card overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="font-semibold text-text-primary">All Classes</h2>
+          <span className="badge-blue">{classes.length} total</span>
+        </div>
+        {loading ? (
+          <p className="p-6 text-sm text-text-secondary">Loading classes…</p>
+        ) : classes.length === 0 ? (
+          <p className="p-6 text-sm text-text-secondary">No classes yet. Create your first class above.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-surface border-b border-border text-left">
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Code</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Students</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {classes.map((c) => (
+                <tr key={c.id} className="hover:bg-surface transition-colors">
+                  <td className="px-6 py-3 font-medium text-text-primary">{c.name}</td>
+                  <td className="px-6 py-3">
+                    <span className="font-mono text-xs bg-primary-light text-primary px-2 py-1 rounded">{c.code}</span>
+                  </td>
+                  <td className="px-6 py-3 text-text-secondary">{c.studentCount}</td>
+                  <td className="px-6 py-3 flex items-center gap-3">
+                    <button
+                      onClick={() => navigate(`/admin/students/register?classId=${c.id}`)}
+                      className="text-primary text-xs font-medium hover:underline"
+                    >
+                      Add student
+                    </button>
+                    <button
+                      onClick={() => handleDelete(c.id)}
+                      className="text-danger text-xs font-medium hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }

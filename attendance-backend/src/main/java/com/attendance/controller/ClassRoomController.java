@@ -53,4 +53,15 @@ public class ClassRoomController {
         classRoomService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{classId}/assign-teacher/{teacherId}")
+    public ResponseEntity<ClassRoomResponse> assignTeacher(@PathVariable Long classId,
+                                                           @PathVariable Long teacherId) {
+        return ResponseEntity.ok(classRoomService.assignTeacher(classId, teacherId));
+    }
+
+    @GetMapping("/my-classes")
+    public ResponseEntity<List<ClassRoomResponse>> myClasses() {
+        return ResponseEntity.ok(classRoomService.myClasses());
+    }
 }

@@ -17,11 +17,7 @@ export default function Login() {
     setLoading(true)
     try {
       const data = await login(email, password)
-      if (data.role === 'ADMIN') {
-        navigate('/admin')
-      } else {
-        navigate('/teacher')
-      }
+      navigate(data.role === 'ADMIN' ? '/admin' : '/teacher')
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Check your credentials.')
     } finally {
@@ -30,55 +26,56 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-brand-dark">AR Smart Attendance</h1>
-          <p className="text-slate-500 text-sm mt-1">Sign in to continue</p>
+          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-text-primary">SmartAttend</h1>
+          <p className="text-text-secondary text-sm mt-1">Sign in to continue</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="card p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-md px-3 py-2 border border-red-200">
+            <div className="bg-red-50 text-danger text-sm rounded-lg px-3 py-2 border border-red-200">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="input"
               placeholder="you@school.edu"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              className="input"
               placeholder="••••••••"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-brand hover:bg-brand-dark text-white font-medium rounded-md py-2 text-sm transition-colors disabled:opacity-60"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
 
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-text-secondary">
             No account?{' '}
-            <Link to="/register" className="text-brand font-medium hover:underline">
+            <Link to="/register" className="text-primary font-medium hover:underline">
               Register
             </Link>
           </p>

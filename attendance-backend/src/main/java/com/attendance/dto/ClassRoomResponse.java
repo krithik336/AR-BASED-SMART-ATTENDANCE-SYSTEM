@@ -8,5 +8,7 @@ public record ClassRoomResponse(
         String code,
         String description,
         long studentCount,
-        Instant createdAt) {
+        Instant createdAt,
+        Long teacherId,
+        String teacherName) {
 }

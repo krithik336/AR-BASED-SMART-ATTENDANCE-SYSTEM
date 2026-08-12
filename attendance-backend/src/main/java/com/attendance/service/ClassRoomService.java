@@ -4,9 +4,12 @@ import com.attendance.dto.ClassRoomRequest;
 import com.attendance.dto.ClassRoomResponse;
 import com.attendance.exception.NotFoundException;
 import com.attendance.model.ClassRoom;
+import com.attendance.model.User;
 import com.attendance.repository.AttendanceSessionRepository;
 import com.attendance.repository.ClassRoomRepository;
 import com.attendance.repository.StudentRepository;
+import com.attendance.repository.UserRepository;
+import com.attendance.security.CurrentUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +21,19 @@ public class ClassRoomService {
     private final ClassRoomRepository classRoomRepository;
     private final StudentRepository studentRepository;
     private final AttendanceSessionRepository sessionRepository;
+    private final UserRepository userRepository;
+    private final CurrentUser currentUser;
 
     public ClassRoomService(ClassRoomRepository classRoomRepository,
                             StudentRepository studentRepository,
-                            AttendanceSessionRepository sessionRepository) {
+                            AttendanceSessionRepository sessionRepository,
+                            UserRepository userRepository,
+                            CurrentUser currentUser) {
         this.classRoomRepository = classRoomRepository;
         this.studentRepository = studentRepository;
         this.sessionRepository = sessionRepository;
+        this.userRepository = userRepository;
+        this.currentUser = currentUser;
     }
 
     @Transactional
@@ -81,6 +90,22 @@ public class ClassRoomService {
         classRoomRepository.delete(room);
     }
 
+    @Transactional
+    public ClassRoomResponse assignTeacher(Long classId, Long teacherId) {
+        ClassRoom room = getEntity(classId);
+        User teacher = userRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("Teacher not found with id " + teacherId));
+        room.setTeacher(teacher);
+        return toResponse(classRoomRepository.save(room));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClassRoomResponse> myClasses() {
+        return classRoomRepository.findByTeacherId(currentUser.id()).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public ClassRoom getEntity(Long id) {
         return classRoomRepository.findById(id)
@@ -89,12 +114,15 @@ public class ClassRoomService {
 
     private ClassRoomResponse toResponse(ClassRoom room) {
         long studentCount = studentRepository.countByClassRoomId(room.getId());
+        User teacher = room.getTeacher();
         return new ClassRoomResponse(
                 room.getId(),
                 room.getName(),
                 room.getCode(),
                 room.getDescription(),
                 studentCount,
-                room.getCreatedAt());
+                room.getCreatedAt(),
+                teacher != null ? teacher.getId() : null,
+                teacher != null ? teacher.getName() : null);
     }
 }
