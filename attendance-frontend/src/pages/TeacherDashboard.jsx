@@ -22,7 +22,7 @@ export default function TeacherDashboard() {
             </svg>
           </div>
           <p className="font-semibold text-text-primary text-sm">Start Attendance Scan</p>
-          <p className="text-xs text-text-secondary mt-0.5">Open a camera session and recognise students in real time</p>
+          <p className="text-xs text-text-secondary mt-0.5">Capture classroom photos and review recognized students</p>
         </button>
 
         <button

@@ -10,5 +10,6 @@ public record FaceMatch(
         double confidence,
         boolean matched,
         MatchScore best,
-        List<MatchScore> candidates) {
+        List<MatchScore> candidates,
+        FaceQuality quality) {
 }

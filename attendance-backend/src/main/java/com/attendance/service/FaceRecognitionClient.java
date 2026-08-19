@@ -1,6 +1,7 @@
 package com.attendance.service;
 
 import com.attendance.dto.vision.CandidateFace;
+import com.attendance.dto.vision.DetectResult;
 import com.attendance.dto.vision.EmbedBatchResult;
 import com.attendance.dto.vision.EmbedResult;
 import com.attendance.dto.vision.HealthStatus;
@@ -84,6 +85,21 @@ public class FaceRecognitionClient {
                         .uri("/health")
                         .retrieve()
                         .body(HealthStatus.class));
+    }
+
+    /**
+     * Detect every face in an image and assess its quality (no embeddings).
+     * Used by the frontend camera-guidance preview, proxied through Spring so
+     * the vision service stays behind JWT.
+     */
+    public DetectResult detect(byte[] imageBytes) {
+        return withRetry("detect", () ->
+                restClient.post()
+                        .uri("/detect")
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(imageBytes)
+                        .retrieve()
+                        .body(DetectResult.class));
     }
 
     /** Embed the single best face in one image. */

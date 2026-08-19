@@ -46,9 +46,16 @@ export default function AttendanceReports() {
       <PageShell
         title="Session Report"
         action={
-          <button onClick={() => navigate('/teacher/sessions')} className="btn-secondary text-xs">
-            ← All sessions
-          </button>
+          <div className="flex gap-3">
+            {s.status === 'ACTIVE' && (
+              <button onClick={() => navigate(`/teacher/sessions/${s.id}/review`)} className="btn-primary text-xs">
+                Review Attendance
+              </button>
+            )}
+            <button onClick={() => navigate('/teacher/sessions')} className="btn-secondary text-xs">
+              ← All sessions
+            </button>
+          </div>
         }
       >
         <div className="card p-6 mb-6">
@@ -139,6 +146,7 @@ export default function AttendanceReports() {
                 <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Started</th>
                 <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Present</th>
                 <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -155,6 +163,18 @@ export default function AttendanceReports() {
                   <td className="px-6 py-3 text-text-secondary">{s.present}/{s.totalStudents}</td>
                   <td className="px-6 py-3">
                     <span className={statusBadge(s.status)}>{s.status}</span>
+                  </td>
+                  <td className="px-6 py-3">
+                    {s.status === 'ACTIVE' ? (
+                      <Link
+                        to={`/teacher/sessions/${s.id}/review`}
+                        className="text-primary font-medium hover:underline text-xs"
+                      >
+                        Review →
+                      </Link>
+                    ) : (
+                      <span className="text-text-secondary text-xs">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

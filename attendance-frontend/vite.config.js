@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    basicSsl()
+  ],
   server: {
-    host: true, // exposes on LAN so you can open it on your phone for camera testing
+    host: true,
     port: 5173,
   },
 })

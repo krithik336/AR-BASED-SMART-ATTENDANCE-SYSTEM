@@ -1,12 +1,11 @@
 package com.attendance.dto.vision;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
-/**
- * Result of matching every face in one frame against the enrolled gallery.
- */
 public record MatchResult(
-        int faceCount,
+        @JsonProperty("face_count") int faceCount,
         double threshold,
         List<FaceMatch> faces) {
 }

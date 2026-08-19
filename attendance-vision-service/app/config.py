@@ -32,7 +32,21 @@ class Settings(BaseSettings):
     # --- Detection (RetinaFace) ----------------------------------------------
     detection_threshold: float = 0.5
     detection_size: tuple[int, int] = (640, 640)
-    max_faces_per_frame: int = 20
+    max_faces_per_frame: int = 100
+
+    # --- Face quality assessment ----------------------------------------------
+    # Minimum face dimension (px) to be usable for recognition.
+    min_face_size: int = 48
+    # Minimum face height relative to the image height.
+    min_face_ratio: float = 0.03
+    # Laplacian variance below this is considered blurry.
+    blur_variance_threshold: float = 35.0
+    # Acceptable mean brightness of the face crop (0-255).
+    brightness_min: float = 40.0
+    brightness_max: float = 245.0
+    # Approximate pose limits in degrees (from landmark geometry).
+    pose_yaw_max: float = 40.0
+    pose_pitch_max: float = 35.0
 
     # --- Recognition (ArcFace) -------------------------------------------------
     embedding_size: int = 512

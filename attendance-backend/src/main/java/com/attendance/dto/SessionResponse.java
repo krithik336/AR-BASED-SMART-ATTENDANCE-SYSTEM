@@ -16,5 +16,7 @@ public record SessionResponse(
         long totalStudents,
         long present,
         long absent,
-        long unverified) {
+        long unverified,
+        long review,
+        long photos) {
 }

@@ -48,6 +48,9 @@ public class AttendanceSession {
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attendance> records = new ArrayList<>();
 
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttendanceCapture> captures = new ArrayList<>();
+
     public AttendanceSession() {}
 
     private AttendanceSession(ClassRoom classRoom, Long teacherId, String subject) {
@@ -77,9 +80,17 @@ public class AttendanceSession {
     public Instant getEndedAt() { return endedAt; }
     public SessionStatus getStatus() { return status; }
     public List<Attendance> getRecords() { return records; }
+    public List<AttendanceCapture> getCaptures() { return captures; }
 
     public void end() {
         this.status = SessionStatus.ENDED;
         this.endedAt = Instant.now();
     }
+
+    public void cancel() {
+        this.status = SessionStatus.CANCELLED;
+        this.endedAt = Instant.now();
+    }
+
+    public void addCapture(AttendanceCapture capture) { this.captures.add(capture); }
 }

@@ -33,6 +33,9 @@ html, body, #root {
   .badge-danger {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-danger;
   }
+  .badge-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-warning;
+  }
   .badge-neutral {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface text-text-secondary;
   }

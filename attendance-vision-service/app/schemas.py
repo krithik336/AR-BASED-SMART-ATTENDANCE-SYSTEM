@@ -19,11 +19,35 @@ class HealthResponse(BaseModel):
     version: str
 
 
+class FaceQuality(BaseModel):
+    score: float
+    size_ok: bool
+    blur_ok: bool
+    brightness_ok: bool
+    pose_ok: bool
+    occlusion_ok: bool
+    reasons: List[str] = Field(default_factory=list)
+    # "GOOD" | "WARNING" | "POOR"
+    verdict: str
+
+
+class DetectedFace(BaseModel):
+    bbox: BoundingBox
+    confidence: float
+    quality: FaceQuality
+
+
+class DetectResponse(BaseModel):
+    face_count: int
+    faces: List[DetectedFace] = Field(default_factory=list)
+
+
 class EmbedResult(BaseModel):
     face_detected: bool
     embedding: Optional[List[float]] = None
     confidence: Optional[float] = None
     bbox: Optional[BoundingBox] = None
+    quality: Optional[FaceQuality] = None
     error: Optional[str] = None
 
 
@@ -55,6 +79,7 @@ class FaceMatch(BaseModel):
     matched: bool
     best: Optional[MatchScore] = None
     candidates: List[MatchScore] = Field(default_factory=list)
+    quality: Optional[FaceQuality] = None
 
 
 class MatchResponse(BaseModel):

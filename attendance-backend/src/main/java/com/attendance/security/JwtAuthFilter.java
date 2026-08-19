@@ -20,12 +20,16 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
+    private static final Logger log =
+            LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+    public JwtAuthFilter(
+            JwtUtil jwtUtil,
+            CustomUserDetailsService userDetailsService
+    ) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
@@ -37,33 +41,124 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        /*
+         * IMPORTANT:
+         *
+         * Browsers send an OPTIONS request before certain
+         * cross-origin requests as a CORS preflight.
+         *
+         * OPTIONS requests do not contain a JWT.
+         *
+         * Therefore, let the request pass through immediately.
+         */
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        /*
+         * Get Authorization header.
+         */
+        final String authHeader =
+                request.getHeader("Authorization");
+
+        /*
+         * No JWT:
+         *
+         * Let Spring Security decide whether this endpoint
+         * is public or requires authentication.
+         */
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            final String jwt = authHeader.substring(7);
-            final String userEmail = jwtUtil.extractUsername(jwt);
 
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            /*
+             * Remove "Bearer " from the Authorization header.
+             */
+            final String jwt =
+                    authHeader.substring(7);
 
+            /*
+             * Extract email/username from JWT.
+             */
+            final String userEmail =
+                    jwtUtil.extractUsername(jwt);
+
+            /*
+             * Only authenticate if:
+             *
+             * 1. Username exists
+             * 2. No authentication has already been established
+             */
+            if (userEmail != null &&
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication() == null) {
+
+                /*
+                 * Load user from database.
+                 */
+                UserDetails userDetails =
+                        userDetailsService
+                                .loadUserByUsername(userEmail);
+
+                /*
+                 * Validate JWT.
+                 */
                 if (jwtUtil.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    /*
+                     * Attach request details.
+                     */
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
                     );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.debug("Authenticated user: {}", userEmail);
+
+                    /*
+                     * Put authenticated user into
+                     * Spring Security context.
+                     */
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authToken);
+
+                    log.debug(
+                            "Authenticated user: {}",
+                            userEmail
+                    );
                 }
             }
+
         } catch (Exception ex) {
-            log.warn("JWT authentication failed: {}", ex.getMessage());
+
+            /*
+             * Do not crash the request when an invalid JWT
+             * is supplied.
+             *
+             * Spring Security will handle authorization later.
+             */
+            log.warn(
+                    "JWT authentication failed: {}",
+                    ex.getMessage()
+            );
         }
 
+        /*
+         * Continue the filter chain.
+         */
         filterChain.doFilter(request, response);
     }
 }

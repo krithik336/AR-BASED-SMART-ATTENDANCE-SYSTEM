@@ -9,5 +9,6 @@ public record EmbedResult(
         List<Double> embedding,
         Double confidence,
         BoundingBox bbox,
-        String error) {
+        String error,
+        FaceQuality quality) {
 }

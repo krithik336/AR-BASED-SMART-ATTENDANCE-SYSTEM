@@ -6,13 +6,15 @@ import numpy as np
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
+from ..analysis import analyze_faces
 from ..config import Settings, get_settings
 from ..embedding import EmbeddingOutcome, embed_image, embed_images
 from ..models import FaceRecognitionEngine, ModelNotReadyError
-from ..recognition import embed_faces
 from ..schemas import (
     BoundingBox,
     CandidateFace,
+    DetectResponse,
+    DetectedFace,
     EmbedBatchResponse,
     EmbedResult,
     FaceMatch,
@@ -73,6 +75,40 @@ def health(
     )
 
 
+@router.post("/detect", response_model=DetectResponse)
+async def detect(
+    request: Request,
+    engine: FaceRecognitionEngine = Depends(get_engine),
+    settings: Settings = Depends(get_settings),
+) -> DetectResponse:
+    """Detect every face in an image and assess quality (no embeddings).
+
+    Lightweight enough for repeated camera-guidance previews.
+    """
+    _guard_ready(engine)
+    data = await request.body()
+    _validate_payload_size(data, settings)
+    image = await run_in_threadpool(_prepare_image, data, settings)
+
+    def _run() -> DetectResponse:
+        faces = analyze_faces(
+            engine,
+            image,
+            settings,
+            embed=False,
+            max_faces=settings.max_faces_per_frame,
+        )
+        return DetectResponse(
+            face_count=len(faces),
+            faces=[
+                DetectedFace(bbox=f.bbox, confidence=f.confidence, quality=f.quality.to_schema())
+                for f in faces
+            ],
+        )
+
+    return await run_in_threadpool(_run)
+
+
 @router.post("/embed", response_model=EmbedResult)
 async def embed(
     request: Request,
@@ -84,7 +120,7 @@ async def embed(
     data = await request.body()
     _validate_payload_size(data, settings)
     image = await run_in_threadpool(_prepare_image, data, settings)
-    outcome = await run_in_threadpool(_embed_one, engine, image)
+    outcome = await run_in_threadpool(_embed_one, engine, image, settings)
     return outcome.to_schema()
 
 
@@ -94,7 +130,11 @@ async def embed_batch(
     engine: FaceRecognitionEngine = Depends(get_engine),
     settings: Settings = Depends(get_settings),
 ) -> EmbedBatchResponse:
-    """Embed the best face of each uploaded image in one request."""
+    """Enroll: exactly one usable face per image, one embedding per image.
+
+    Images with no face, multiple faces, or a poor-quality face are reported
+    per-image (face_detected=false + error) and skipped, never fatal.
+    """
     _guard_ready(engine)
     if not files:
         raise HTTPException(status_code=400, detail="At least one file is required")
@@ -114,7 +154,7 @@ async def embed_batch(
             # Corrupt/unsupported files are reported per-image, not fatal.
             images.append(None)
 
-    outcomes = await run_in_threadpool(_embed_many, engine, images)
+    outcomes = await run_in_threadpool(_embed_many, engine, images, settings)
     results = [o.to_schema() for o in outcomes]
     processed = sum(1 for r in results if r.face_detected)
     return EmbedBatchResponse(processed=processed, results=results)
@@ -126,7 +166,11 @@ async def match(
     engine: FaceRecognitionEngine = Depends(get_engine),
     settings: Settings = Depends(get_settings),
 ) -> MatchResponse:
-    """Match every face in a base64 frame against the enrolled gallery."""
+    """Match every face in a base64 image against the enrolled gallery.
+
+    Each face carries its quality assessment; faces the backend deems POOR are
+    meant to be rejected (the backend owns the final decision).
+    """
     _guard_ready(engine)
     threshold = (
         payload.threshold
@@ -142,11 +186,15 @@ async def match(
         except InvalidImageError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-        faces = embed_faces(
-            engine, image, max_faces=settings.max_faces_per_frame
+        faces = analyze_faces(
+            engine, image, settings, embed=True, max_faces=settings.max_faces_per_frame
         )
-        results = [_match_face(face.embedding, face.bbox, face.confidence, payload.candidates, threshold)
-                   for face in faces]
+        results = [
+            _match_face(face.embedding, face.bbox, face.confidence, face.quality.to_schema(),
+                        payload.candidates, threshold)
+            for face in faces
+            if face.embedding is not None
+        ]
         return MatchResponse(
             face_count=len(results), threshold=threshold, faces=results
         )
@@ -154,15 +202,15 @@ async def match(
     return await run_in_threadpool(_run)
 
 
-def _embed_one(engine: FaceRecognitionEngine, image: np.ndarray) -> EmbeddingOutcome:
-    return embed_image(engine, image)
+def _embed_one(engine: FaceRecognitionEngine, image: np.ndarray, settings: Settings) -> EmbeddingOutcome:
+    return embed_image(engine, image, settings)
 
 
 def _embed_many(
-    engine: FaceRecognitionEngine, images: List[np.ndarray]
+    engine: FaceRecognitionEngine, images: List[np.ndarray], settings: Settings
 ) -> List[EmbeddingOutcome]:
     return [
-        embed_image(engine, image)
+        embed_image(engine, image, settings)
         if image is not None
         else EmbeddingOutcome(face_detected=False, error="invalid image")
         for image in images
@@ -173,6 +221,7 @@ def _match_face(
     query: np.ndarray,
     bbox: BoundingBox,
     confidence: float,
+    quality,
     candidates: List[CandidateFace],
     threshold: float,
 ) -> FaceMatch:
@@ -199,4 +248,5 @@ def _match_face(
         matched=matched,
         best=best,
         candidates=scores,
+        quality=quality,
     )

@@ -7,7 +7,8 @@ import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import ClassManagement from './pages/ClassManagement'
 import StudentRegistration from './pages/StudentRegistration'
-import AttendanceScan from './pages/AttendanceScan'
+import AttendanceCapture from './pages/AttendanceCapture'
+import AttendanceReview from './pages/AttendanceReview'
 import AttendanceReports from './pages/AttendanceReports'
 import TeacherManagement from './pages/TeacherManagement'
 import MyClasses from './pages/MyClasses'
@@ -195,7 +196,7 @@ export default function App() {
           } />
           <Route path="/teacher/scan" element={
             <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
-              <TeacherLayout><AttendanceScan /></TeacherLayout>
+              <TeacherLayout><AttendanceCapture /></TeacherLayout>
             </ProtectedRoute>
           } />
           <Route path="/teacher/sessions" element={
@@ -206,6 +207,11 @@ export default function App() {
           <Route path="/teacher/sessions/:id" element={
             <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
               <TeacherLayout><AttendanceReports /></TeacherLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/sessions/:id/review" element={
+            <ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']}>
+              <TeacherLayout><AttendanceReview /></TeacherLayout>
             </ProtectedRoute>
           } />
         </Routes>
